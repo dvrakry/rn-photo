@@ -1,7 +1,7 @@
 import Navigation from './navigations';
 
 const App = () => {
-  <Navigation />;
+  return <Navigation />;
 };
 
 export default App;
