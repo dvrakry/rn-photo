@@ -22,7 +22,7 @@ import {
   AuthFormTypes,
   initAuthForm,
 } from '../reducers/authFormReducer';
-import { signIn } from '../api/auth';
+import { getAuthErrorMessages, signIn } from '../api/auth';
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
