@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   Keyboard,
   ScrollView,
@@ -7,42 +8,63 @@ import {
   View,
 } from 'react-native';
 import Input, { InputTypes, returnKeyTypes } from '../components/Input';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useReducer, useRef, useState } from 'react';
 import Button from '../components/Button';
 import SafeInputView from '../components/SafeInputView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextButton from '../components/TextButton';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AuthRoutes } from '../navigations/routes';
 import HR from '../components/HR';
 import { WHITE } from '../colors';
+import {
+  authFormReducer,
+  AuthFormTypes,
+  initAuthForm,
+} from '../reducers/authFormReducer';
+import { signIn } from '../api/auth';
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [disabled, setDisabled] = useState(true);
+
+  const [form, dispatch] = useReducer(authFormReducer, initAuthForm);
+
   const passwordRef = useRef();
   const { top, bottom } = useSafeAreaInsets();
   const { navigate } = useNavigation();
 
-  useEffect(() => {
-    console.log('SignIn Mount');
+  useFocusEffect(
+    useCallback(() => {
+      return () => dispatch({ type: AuthFormTypes.RESET });
+    }, [])
+  );
 
-    return () => console.log('SignIn Unmount');
-  }, []);
+  const updateForm = (payload) => {
+    const newForm = { ...form, ...payload };
+    const disabled = !newForm.email || !newForm.password;
 
-  useEffect(() => {
-    setDisabled(!email || !password);
-  }, [email, password]);
+    dispatch({
+      type: AuthFormTypes.UPDATE_FORM,
+      payload: { disabled, ...payload },
+    });
+  };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     Keyboard.dismiss();
-    if (!disabled && !isLoading) {
-      setIsLoading(true);
+    if (!form.disabled && !form.isLoading) {
+      dispatch({ type: AuthFormTypes.TOGGLE_LOADING });
+      try {
+        const user = await signIn(form);
+        console.log('user', user);
+      } catch (error) {
+        const message = getAuthErrorMessages(e.code);
+        Alert.alert('로그인 실패', message);
+      }
       //login완료
-      console.log(email, password);
-      setIsLoading(false);
+      dispatch({ type: AuthFormTypes.TOGGLE_LOADING });
     }
   };
 
@@ -65,8 +87,8 @@ const SignInScreen = () => {
         >
           <Input
             inputType={InputTypes.EMAIL}
-            value={email}
-            onChangeText={(text) => setEmail(text.trim())}
+            value={form.email}
+            onChangeText={(text) => updateForm({ email: text.trim() })}
             onSubmitEditing={() => passwordRef.current.focus()}
             styles={{ container: { marginBottom: 20 } }}
             returnKeyType={returnKeyTypes.NEXT}
@@ -74,16 +96,16 @@ const SignInScreen = () => {
           <Input
             ref={passwordRef}
             inputType={InputTypes.PASSWORD}
-            value={password}
-            onChangeText={(text) => setPassword(text.trim())}
+            value={form.password}
+            onChangeText={(text) => updateForm({ password: text.trim() })}
             onSubmitEditing={onSubmit}
             styles={{ container: { marginBottom: 20 } }}
             returnKeyType={returnKeyTypes.DONE}
           />
           <Button
             title={'SIGNIN'}
-            disabled={disabled}
-            isLoading={isLoading}
+            disabled={form.disabled}
+            isLoading={form.isLoading}
             onPress={onSubmit}
             styles={{ container: { marginTop: 20 } }}
           />
