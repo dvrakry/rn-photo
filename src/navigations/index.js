@@ -34,7 +34,8 @@ const Navigation = () => {
             setUser(user);
           }
           setIsReady(true);
-          unsubscribe();
+          //unsubscribe();
+          return () => unsubscribe();
         });
       } catch (error) {
         console.log(error);

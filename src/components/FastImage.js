@@ -1,4 +1,5 @@
-import { Image } from 'react-native';
+//import { Image } from 'react-native';
+import { Image } from 'expo-image';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import * as Crypto from 'expo-crypto';

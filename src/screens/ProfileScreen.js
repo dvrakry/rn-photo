@@ -5,18 +5,32 @@ import { signOut } from '../api/auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FastImage from '../components/FastImage';
+import DangerAlert, { AlertTypes } from '../components/DangerAlert';
+import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { MainRoutes } from '../navigations/routes';
 
 const ProfileScreen = () => {
   const [user, setUser] = useUserState();
   const { top } = useSafeAreaInsets();
+  const [visible, setVisible] = useState(false);
+  const navigation = useNavigation();
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
+      <DangerAlert
+        visible={visible}
+        onClose={() => setVisible(false)}
+        onConfirm={async () => {
+          await signOut();
+          setUser({});
+        }}
+        alertType={AlertTypes.SIGNOUT}
+      />
       <View style={styles.settingButton}>
         <Pressable
-          onPress={async () => {
-            signOut();
-            setUser({});
+          onPress={() => {
+            setVisible(true);
           }}
           hitSlop={10}
         >
@@ -36,7 +50,10 @@ const ProfileScreen = () => {
           ]}
         >
           <FastImage source={{ uri: user.photoURL }} style={styles.photo} />
-          <Pressable style={styles.editButton} onPress={() => {}}>
+          <Pressable
+            style={styles.editButton}
+            onPress={() => navigation.navigate(MainRoutes.UPDATE_PROFILE)}
+          >
             <MaterialCommunityIcons name="pencil" size={20} color={WHITE} />
           </Pressable>
         </View>
