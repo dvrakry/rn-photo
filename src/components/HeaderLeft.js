@@ -9,7 +9,7 @@ const HeaderLeft = () => {
   return (
     <Pressable
       hitSlop={10}
-      onPress={() => navigation.canGoBack() && navigation.goBack()}
+      onPressOut={() => navigation.canGoBack() && navigation.goBack()}
     >
       <MaterialCommunityIcons name="chevron-left" size={28} color={BLACK} />
     </Pressable>

@@ -1,7 +1,8 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   Alert,
   Keyboard,
+  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -16,30 +17,58 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { updateUserInfo } from '../api/auth';
 import SafeInputView from '../components/SafeInputView';
 import { MainRoutes } from '../navigations/routes';
+import { getLocalUri } from '../components/ImagePicker';
+import { uploadPhoto } from '../api/storage';
 
 const UpdateProfileScreen = () => {
   const navigation = useNavigation();
+  const { params } = useRoute();
 
   const [user, setUser] = useUserState();
+  const [photo, setPhoto] = useState({ uri: user.photoURL });
   const [displayName, setDisplayName] = useState(user.displayName);
   const [disabled, setDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log('photo.id', photo.id);
+
+  useEffect(() => {
+    if (params) {
+      const { selectedPhotos } = params;
+      console.log(selectedPhotos[0]);
+      if (selectedPhotos?.length) {
+        console.log(selectedPhotos[0]);
+        setPhoto(selectedPhotos[0]);
+      }
+    }
+  }, [params]);
 
   const onSubmit = useCallback(async () => {
     Keyboard.dismiss();
     if (!disabled) {
       setIsLoading(true);
       try {
-        const userInfo = { displayName };
+        const localUri = photo.id
+          ? Platform.select({
+              ios: await getLocalUri(photo.id),
+              android: photo.uri,
+            })
+          : photo.uri;
+
+        const photoURL = await uploadPhoto(localUri);
+
+        const userInfo = { displayName, photoURL };
+
         await updateUserInfo(userInfo);
         setUser((prev) => ({ ...prev, ...userInfo }));
+
         navigation.goBack();
       } catch (e) {
         Alert.alert('사용자 수정 실패', e.message);
         setIsLoading(false);
       }
     }
-  }, [disabled, displayName, navigation, setUser]);
+  }, [disabled, displayName, navigation, setUser, , photo.id, photo.uri]);
 
   useEffect(() => {
     setDisabled(!displayName || isLoading);
@@ -55,7 +84,7 @@ const UpdateProfileScreen = () => {
     <SafeInputView>
       <View style={styles.container}>
         <View>
-          <FastImage source={{ uri: user.photoURL }} style={styles.photo} />
+          <FastImage source={{ uri: photo.uri }} style={styles.photo} />
           <Pressable
             onPress={() => navigation.navigate(MainRoutes.IMAGE_PICKER)}
             style={styles.imageButton}
