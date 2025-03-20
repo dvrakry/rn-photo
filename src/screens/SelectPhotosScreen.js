@@ -59,12 +59,11 @@ const SelectPhotosScreen = () => {
   }, [disabled, photos]);
 
   useLayoutEffect(() => {
+    console.log('Select_layout');
     navigation.setOptions({
       headerRight: () => <HeaderRight disabled={disabled} onPress={onCofirm} />,
     });
   }, [disabled, navigation, onCofirm]);
-
-  console.log('photos', photos);
 
   return (
     <View style={styles.container}>
