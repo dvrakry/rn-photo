@@ -10,6 +10,12 @@ import {
 import HeaderRight from '../components/HeaderRight';
 import FastImage from '../components/FastImage';
 import { GRAY } from '../colors';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { MAP_KEY } from '../../env';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+import 'react-native-get-random-values';
+//import { v4 as uuid } from 'uuid';
 
 const MAX_TEXT_LENGTH = 60;
 
@@ -37,11 +43,9 @@ const WriteTextScreen = () => {
     setTimeout(() => {
       setIsLoading(false);
     }, 3000);
-    setIsLoading(false);
   }, []);
 
   useLayoutEffect(() => {
-    console.log('Write_layout');
     navigation.setOptions({
       headerRight: () => <HeaderRight disabled={disabled} onPress={onSubmit} />,
     });
@@ -57,6 +61,25 @@ const WriteTextScreen = () => {
             style={{ width, height: width }}
           />
         ))}
+      </View>
+
+      <View style={styles.location}>
+        <GooglePlacesAutocomplete
+          placeholder={'Location'}
+          query={{ key: MAP_KEY, language: 'ko' }}
+          onPress={(data) => console.log('data', data)}
+          onFail={(e) => {
+            console.log('GooglePlacesAutocomplete Fail : ', e);
+          }}
+          styles={{ container: { flex: 0 }, textInput: { paddingLeft: 30 } }}
+        />
+        <View style={styles.locationIcon}>
+          <MaterialCommunityIcons
+            name="map-marker"
+            size={20}
+            color={GRAY.DARK}
+          />
+        </View>
       </View>
 
       <View>
@@ -96,6 +119,17 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     paddingHorizontal: 20,
     fontSize: 12,
+  },
+  locationIcon: {
+    position: 'absolute',
+    left: 20,
+    top: 16,
+  },
+  location: {
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: GRAY.LIGHT,
   },
 });
 
