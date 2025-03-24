@@ -10,11 +10,10 @@ import {
 import HeaderRight from '../components/HeaderRight';
 import FastImage from '../components/FastImage';
 import { GRAY } from '../colors';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { MAP_KEY } from '../../env';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import 'react-native-get-random-values';
+import LocationSearch from '../components/LocationSearch';
+import { uploadPhoto } from '../api/storage';
 //import { v4 as uuid } from 'uuid';
 
 const MAX_TEXT_LENGTH = 60;
@@ -26,6 +25,7 @@ const WriteTextScreen = () => {
 
   const [photoUris, setPhotoUris] = useState([]);
   const [text, setText] = useState('');
+  const [location, setLocation] = useState('');
 
   const [disabled, setDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,12 +38,21 @@ const WriteTextScreen = () => {
     setPhotoUris(params?.photoUris ?? []);
   }, [params?.photoUris]);
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      console.log('1');
+      console.log('photoUris', photoUris);
+      const photos = await Promise.all(
+        photoUris.map((uri) => uploadPhoto(uri))
+      );
+      console.log('2');
+      console.log('photos', photos);
+    } catch (e) {
       setIsLoading(false);
-    }, 3000);
-  }, []);
+    }
+  }, [photoUris]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -63,24 +72,11 @@ const WriteTextScreen = () => {
         ))}
       </View>
 
-      <View style={styles.location}>
-        <GooglePlacesAutocomplete
-          placeholder={'Location'}
-          query={{ key: MAP_KEY, language: 'ko' }}
-          onPress={(data) => console.log('data', data)}
-          onFail={(e) => {
-            console.log('GooglePlacesAutocomplete Fail : ', e);
-          }}
-          styles={{ container: { flex: 0 }, textInput: { paddingLeft: 30 } }}
-        />
-        <View style={styles.locationIcon}>
-          <MaterialCommunityIcons
-            name="map-marker"
-            size={20}
-            color={GRAY.DARK}
-          />
-        </View>
-      </View>
+      <LocationSearch
+        onPress={({ description }) => setLocation(description)}
+        isLoading={isLoading}
+        isSelected={!!location}
+      />
 
       <View>
         <TextInput
@@ -119,17 +115,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     paddingHorizontal: 20,
     fontSize: 12,
-  },
-  locationIcon: {
-    position: 'absolute',
-    left: 20,
-    top: 16,
-  },
-  location: {
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-    borderBottomWidth: 0.5,
-    borderBottomColor: GRAY.LIGHT,
   },
 });
 
