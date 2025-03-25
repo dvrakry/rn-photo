@@ -14,6 +14,9 @@ import { GRAY } from '../colors';
 import 'react-native-get-random-values';
 import LocationSearch from '../components/LocationSearch';
 import { uploadPhoto } from '../api/storage';
+import { Alert } from 'react-native';
+import { createPost } from '../api/post';
+import event, { EventType } from '../event';
 //import { v4 as uuid } from 'uuid';
 
 const MAX_TEXT_LENGTH = 60;
@@ -42,17 +45,23 @@ const WriteTextScreen = () => {
     setIsLoading(true);
 
     try {
-      console.log('1');
-      console.log('photoUris', photoUris);
       const photos = await Promise.all(
         photoUris.map((uri) => uploadPhoto(uri))
       );
-      console.log('2');
-      console.log('photos', photos);
+      await createPost({ photos, location, text });
+      //Event -> REFRESH
+      event.emit(EventType.REFRESH);
+
+      navigation.goBack();
     } catch (e) {
-      setIsLoading(false);
+      Alert.alert('글 작성 실패', e.message, [
+        {
+          text: '확인',
+          onPress: () => setIsLoading(false),
+        },
+      ]);
     }
-  }, [photoUris]);
+  }, [photoUris, location, text, navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

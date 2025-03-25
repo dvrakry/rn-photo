@@ -1,24 +1,21 @@
-import { StyleSheet, Text, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { StyleSheet, View } from 'react-native';
 import { WHITE } from '../colors';
+import PostList from '../components/PostList';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ListScreen = () => {
+  const { top } = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>ListScreen</Text>
+    <View style={[styles.container, { paddingTop: top }]}>
+      <PostList />
     </View>
   );
-};
-
-ListScreen.propTypes = {
-  //PropTypes
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: WHITE,
   },
   title: {
