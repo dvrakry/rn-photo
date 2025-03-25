@@ -34,8 +34,20 @@ const getOption = ({ after, isMine }) => {
     console.log('isMine', isMine);
 
     const uid = getAuth().currentUser.uid;
-    console.log('uid', uid);
+    const user = getAuth().currentUser;
+    console.log('uid: ', uid);
+    console.log('user.uid: ', user.uid);
     console.log('after', after);
+
+    // return after
+    //   ? query(
+    //       collectionRef,
+    //       where('user.uid', '==', uid),
+    //       orderBy('createdTs', 'desc'),
+    //       startAfter(after),
+    //       limit(10)
+    //     )
+    //   : query(collectionRef, orderBy('createdTs', 'desc'), limit(10));
 
     return after
       ? query(
@@ -65,15 +77,15 @@ const getOption = ({ after, isMine }) => {
 
 export const getPosts = async ({ after, isMine }) => {
   const option = getOption({ after, isMine });
-  console.log('option', option);
+  //console.log('option', option);
 
   const documentSnapshot = await getDocs(option);
-  console.log('documentSnapshot', documentSnapshot);
+  //console.log('documentSnapshot', documentSnapshot);
 
   const list = documentSnapshot.docs.map((doc) => doc.data());
   const last = documentSnapshot.docs[documentSnapshot.docs.length - 1];
-  console.log('list', list);
-  console.log('last', last);
+  //console.log('list', list);
+  //console.log('last', last);
 
   return { list, last };
 };
